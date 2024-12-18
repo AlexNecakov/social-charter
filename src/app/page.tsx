@@ -9,6 +9,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 import { PlatformSelector } from './_components/PlatformSelector';
 import { MetricsSelector } from './_components/MetricsSelector';
 import { BreakdownsSelector } from './_components/BreakdownsSelector';
+import { CustomDateRangeSelector } from './_components/CustomDateRangeSelector';
 import { DimensionsSelector } from './_components/DimensionsSelector';
 import { DateRangeSelector } from './_components/DateRangeSelector';
 import { LevelSelector } from './_components/LevelSelector';
@@ -42,7 +43,7 @@ const Home = () => {
             breakdowns: platform === 'meta' ? breakdownsState : undefined,
             dimensions: platform === 'tiktok' ? dimensionsState : undefined,
             timeIncrement: platform === 'meta' ? timeIncrementState : undefined,
-            dateRangeEnum: dateRangeEnumState || undefined,
+            dateRangeEnum: dateRangeState ? undefined : dateRangeEnumState,
             dateRange: dateRangeState ? {
                 from: dateRangeState.from.toISOString().split('T')[0],
                 to: dateRangeState.to.toISOString().split('T')[0]
@@ -83,6 +84,7 @@ const Home = () => {
             <DateRangeSelector
                 onChange={setDateRangeEnumState}
             />
+            <CustomDateRangeSelector onChange={setDateRangeState} />
             {platform === 'meta' && <TimeIncrementSelector onChange={setTimeIncrementState} />}
             {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />}
             <FetchButton onClick={handleFetchData} />

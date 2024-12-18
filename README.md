@@ -1,12 +1,3 @@
-Requirements
-
-   UI Features & Workflow:
-        Date Range Input:
-            Support selecting dateRangeEnum or a custom date range (dateRange with from and to).
-            Use a date picker for custom ranges.
-    Validation & Error Handling:
-        On failed network requests, show a user-friendly error message (not just console errors).
-
 # How to run locally:
 1. `git clone <to wherever>`
 2. `npm install`
