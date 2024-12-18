@@ -75,7 +75,7 @@ const Home = () => {
                 onChange={setDateRangeEnumState}
             />
             {platform === 'meta' && <TimeIncrementSelector onChange={setTimeIncrementState} />}
-            {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />} {/* Add if you have a component for this */}
+            {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />}
             <FetchButton onClick={handleFetchData} />
             {loading && <div>Loading...</div>}
             {error && <Alert variant="destructive">{error}</Alert>}
