@@ -1,39 +1,22 @@
-import { useState } from 'react';
-import { DatePicker } from '~/components/ui/datepicker'; // Assuming shadcn/ui has a DatePicker, otherwise use a different UI library or custom implementation
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
+
+const DATE_RANGES = ['last7', "last14", "last30", "lifetime"];
 
 interface DateRangeSelectorProps {
-    onDateRangeChange: (from: string, to: string) => void;
+    onChange: (value: string) => void;
 }
 
-export function DateRangeSelector({ onDateRangeChange }: DateRangeSelectorProps) {
-    const [fromDate, setFromDate] = useState<Date | null>(null);
-    const [toDate, setToDate] = useState<Date | null>(null);
-
-    const handleDateChange = (type: 'from' | 'to') => (date: Date | null) => {
-        if (type === 'from') {
-            setFromDate(date);
-        } else {
-            setToDate(date);
-        }
-        if (fromDate && toDate) {
-            onDateRangeChange(fromDate.toISOString().split('T')[0], toDate.toISOString().split('T')[0]);
-        }
-    };
-
+export function DateRangeSelector({ onChange }: DateRangeSelectorProps) {
     return (
-        <div className="flex space-x-4">
-            <DatePicker
-                label="From"
-                selected={fromDate}
-                onChange={handleDateChange('from')}
-                placeholderText="Select start date"
-            />
-            <DatePicker
-                label="To"
-                selected={toDate}
-                onChange={handleDateChange('to')}
-                placeholderText="Select end date"
-            />
-        </div>
+        <Select onValueChange={(value) => onChange(value)}>
+            <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Date Range" />
+            </SelectTrigger>
+            <SelectContent>
+                {DATE_RANGES.map((increment) => (
+                    <SelectItem key={increment} value={increment}>{increment}</SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
     );
 }

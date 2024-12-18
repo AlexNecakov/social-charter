@@ -72,8 +72,7 @@ const Home = () => {
             )}
             <LevelSelector platform={platform} onChange={setLevelState} />
             <DateRangeSelector
-                onSelectDateRange={setDateRangeState}
-                onSelectDateRangeEnum={setDateRangeEnumState}
+                onChange={setDateRangeEnumState}
             />
             {platform === 'meta' && <TimeIncrementSelector onChange={setTimeIncrementState} />}
             {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />} {/* Add if you have a component for this */}
