@@ -1,3 +1,6 @@
+# Marketing Data frontend
+![graph](graph.png)
+
 # How to run locally:
 1. `git clone <to wherever>`
 2. `npm install`
