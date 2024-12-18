@@ -68,6 +68,8 @@ export const createCallerFactory = t.createCallerFactory;
  *
  * @see https://trpc.io/docs/router
  */
+
+//create trpc redirect to newform server so i can just use trpc
 export const createTRPCRouter = t.router({
     externalData: t.procedure
         .input(z.string())

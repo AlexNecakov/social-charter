@@ -17,6 +17,7 @@ import { FetchButton } from './_components/FetchButton';
 import { Alert } from '~/components/ui/alert';
 import { ChartComponent } from './_components/ChartComponent';
 import ReportTypeSelector from './_components/ReportTypeSelector';
+import LoadingSpinner from '~/components/ui/LoadingSpinner';
 
 const Home = () => {
     const [platform, setPlatform] = useState<'meta' | 'tiktok'>('meta');
@@ -50,16 +51,24 @@ const Home = () => {
         };
 
         setLoading(true);
+        setError(null); // Reset previous error when a new request is made
         try {
             const result = await fetchData(platform, parameters);
-            setData(result.data);
-            console.log(result.data);
-        } catch (error) {
-            setError(`Failed to fetch data: ${(error as Error).message}`);
+
+            // Check if the result contains an error
+            if (result.error) {
+                setError(result.error); // Display the error from the API
+            } else {
+                setData(result.data);  // Set the data if no error
+                setError(null); // Clear any previous error
+            }
+        } catch (error: any) {
+            setError(`Failed to fetch data: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="container mx-auto p-4">
@@ -77,7 +86,7 @@ const Home = () => {
             {platform === 'meta' && <TimeIncrementSelector onChange={setTimeIncrementState} />}
             {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />}
             <FetchButton onClick={handleFetchData} />
-            {loading && <div>Loading...</div>}
+            {loading && <LoadingSpinner />}
             {error && <Alert variant="destructive">{error}</Alert>}
             {data && Array.isArray(data) && <ChartComponent data={data} />}
         </div>
