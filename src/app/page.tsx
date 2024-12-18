@@ -73,26 +73,36 @@ const Home = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <PlatformSelector onChange={setPlatform} />
-            <MetricsSelector platform={platform} onChange={setMetricsState} />
-            {platform === 'meta' ? (
-                <BreakdownsSelector onChange={setBreakdownsState} />
-            ) : (
-                <DimensionsSelector onChange={setDimensionsState} />
-            )}
-            <LevelSelector platform={platform} onChange={setLevelState} />
-            <DateRangeSelector
-                onChange={setDateRangeEnumState}
-            />
-            <CustomDateRangeSelector onChange={setDateRangeState} />
-            {platform === 'meta' && <TimeIncrementSelector onChange={setTimeIncrementState} />}
-            {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />}
-            <FetchButton onClick={handleFetchData} />
+            {/* Row for menu components */}
+            <div className="flex flex-wrap gap-4 mb-4">
+                <PlatformSelector onChange={setPlatform} />
+                <MetricsSelector platform={platform} onChange={setMetricsState} />
+                {platform === 'meta' ? (
+                    <BreakdownsSelector onChange={setBreakdownsState} />
+                ) : (
+                    <DimensionsSelector onChange={setDimensionsState} />
+                )}
+                <LevelSelector platform={platform} onChange={setLevelState} />
+                <DateRangeSelector onChange={setDateRangeEnumState} />
+                <CustomDateRangeSelector onChange={setDateRangeState} />
+                {platform === 'meta' && <TimeIncrementSelector onChange={setTimeIncrementState} />}
+                {platform === 'tiktok' && <ReportTypeSelector onChange={setReportType} />}
+                <FetchButton onClick={handleFetchData} />
+            </div>
+
+            {/* Loading and error messages */}
             {loading && <LoadingSpinner />}
             {error && <Alert variant="destructive">{error}</Alert>}
-            {data && Array.isArray(data) && <ChartComponent data={data} />}
+
+            {/* Chart Component - Takes up remaining space */}
+            {data && Array.isArray(data) && (
+                <div className="h-[500px] md:h-[600px] mt-8">
+                    <ChartComponent data={data} />
+                </div>
+            )}
         </div>
     );
 };
 
 export default Home;
+
