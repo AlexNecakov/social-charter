@@ -1,13 +1,34 @@
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import { Bar } from 'react-chartjs-2';
 
 interface ChartProps {
     data: Array<{
-        spend: string;
+        // dimensions
+        ad_id: string;
+        campaign_id: string;
+        adgroup_id: string;
+        advertiser_id: string;
+        stat_time_day: string;
+        campaign_name: string;
+        adgroup_name: string;
+        ad_name: string;
+        country_code: string;
+        age: string;
+        gender: string;
+        province_id: string;
+        dma_id: string;
+        country: string;
+        region: string;
+        dma: string;
+        impression_device: string;
+        platform_position: string;
+        publisher_platform: string;
+
+        // date
         date_start: string;
         date_stop: string;
+
+        // metrics
+        spend: string;
         impressions: string;
         clicks: string;
         ctr: string;
@@ -35,6 +56,14 @@ export const ChartComponent: React.FC<ChartProps> = ({ data }) => {
         'skan_purchase', 'skan_cost_per_purchase'
     ];
 
+    // Define the dimensions
+    const dimensions = [
+        'ad_id', 'campaign_id', 'adgroup_id', 'advertiser_id',
+        'stat_time_day', 'campaign_name', 'adgroup_name', 'ad_name',
+        'country_code', 'age', 'gender', 'province_id', 'dma_id',
+        'country', 'region', 'dma', 'impression_device', 'platform_position', 'publisher_platform'
+    ];
+
     // Function to generate datasets for the given metrics, excluding null values
     const generateDataset = (label: string, color: string) => {
         const dataPoints = data.map(item => {
@@ -50,9 +79,10 @@ export const ChartComponent: React.FC<ChartProps> = ({ data }) => {
         return {
             label,
             data: dataPoints, // Include only valid data
-            fill: false,
-            borderColor: color,
-            tension: 0.1,
+            fill: true, // Set fill to true to color the bars
+            backgroundColor: color, // Set the bar color
+            borderColor: color, // Optional: set border color as well
+            borderWidth: 1, // Optional: set border width for clarity
         };
     };
 
@@ -78,7 +108,18 @@ export const ChartComponent: React.FC<ChartProps> = ({ data }) => {
 
     // Prepare chart data: Multiple datasets (from metrics)
     const chartData = {
-        labels: data.map(item => item.date_start), // x-axis (use 'date_start' as labels)
+        // Use the first non-null dimension field as the x-axis labels
+        labels: data.map(item => {
+            // Iterate through the dimensions and return the first non-null value
+            for (const dimension of dimensions) {
+                const value = item[dimension];
+                if (value && value !== '') {
+                    return value;
+                }
+            }
+            return 'Unknown'; // Default if all dimension fields are null or empty
+        }),
+
         datasets: metrics.map(metric => {
             const dataset = generateDataset(metric, colors[metric] || 'rgb(0,0,0)');
             return dataset; // Only return non-null datasets
@@ -92,9 +133,32 @@ export const ChartComponent: React.FC<ChartProps> = ({ data }) => {
                 beginAtZero: true,
             },
         },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    // Customizing the tooltip label
+                    label: (tooltipItem) => {
+                        const { datasetIndex, dataIndex } = tooltipItem;
+                        const metricLabel = chartData.datasets[datasetIndex].label;
+                        const metricValue = tooltipItem.raw;
+
+                        // Access the dimension data for the specific data point
+                        const dimension = data[dataIndex];
+
+                        // Find the first non-null dimension value for the tooltip
+                        const dimensionLabel = Object.keys(dimension)
+                            .map((key) => (dimension[key] && key !== 'date_start' && key !== 'date_stop' ? `${key}: ${dimension[key]}` : ''))
+                            .filter(Boolean)
+                            .join(', ') || 'No dimension data';
+
+                        return `${metricLabel}: ${metricValue} (${dimensionLabel})`;
+                    },
+                },
+            },
+        },
     };
 
-    return <Line data={chartData} options={options} />;
+    return <Bar data={chartData} options={options} />;
 };
 
 export default ChartComponent;
