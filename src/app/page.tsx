@@ -1,53 +1,74 @@
-import Link from "next/link";
+'use client'
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import { fetchData } from '../lib/api';
 
-import { LatestPost } from "~/app/_components/post";
-import { api, HydrateClient } from "~/trpc/server";
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+import { PlatformSelector } from './_components/PlatformSelector';
+import { MetricsSelector } from './_components/MetricsSelector';
+import { BreakdownsSelector } from './_components/BreakdownsSelector';
+import { DimensionsSelector } from './_components/DimensionsSelector';
+import { DateRangeSelector } from './_components/DateRangeSelector';
+import { LevelSelector } from './_components/LevelSelector';
+import { TimeIncrementSelector } from './_components/TimeIncrementSelector';
+import { FetchButton } from './_components/FetchButton';
+import { Alert } from '~/components/ui/alert';
+import { ChartComponent } from './_components/ChartComponent';
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+const Home = () => {
+    const [platform, setPlatform] = useState<'meta' | 'tiktok'>('meta');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState(null);
+    const [metricsState, setMetricsState] = useState<string[]>(['spend']);
+    const [dimensionsState, setDimensionsState] = useState<string[]>([]);
+    const [breakdownsState, setBreakdownsState] = useState<string[]>(["age"]);
+    const [levelState, setLevelState] = useState<string>('account');
+    const [timeIncrementState, setTimeIncrementState] = useState<string>('all_days');
+    const [dateRangeEnumState, setDateRangeEnumState] = useState<string>('lifetime');
+    const [dateRangeState, setDateRangeState] = useState<{ from: Date; to: Date } | null>(null);
 
-  void api.post.getLatest.prefetch();
+    const handleFetchData = async () => {
+        const parameters = {
+            metrics: metricsState, // from MetricsSelector
+            level: levelState, // from LevelSelector
+            breakdowns: breakdownsState,  // from BreakdownsSelector
+            timeIncrement: timeIncrementState ? timeIncrementState : undefined, // from TimeIncrementSelector
+            dateRangeEnum: dateRangeEnumState ? dateRangeEnumState : undefined, // from DateRangeSelector if preset is chosen
+            dateRange: dateRangeState ? {
+                from: dateRangeState.from.toISOString().split('T')[0],
+                to: dateRangeState.to.toISOString().split('T')[0]
+            } : undefined // from DateRangeSelector if custom range is chosen
+        };
 
-  return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-          </div>
+        setLoading(true);
+        try {
+            const result = await fetchData(platform, parameters);
+            setData(result.data);
+            console.log(result.data)
+        } catch (error) {
+            setError(`Failed to fetch data: ${(error as Error).message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-          <LatestPost />
+    return (
+        <div className="container mx-auto p-4">
+            <PlatformSelector onChange={setPlatform} />
+            <MetricsSelector platform={platform} />
+            {platform === 'meta' ? <BreakdownsSelector /> : <DimensionsSelector />}
+            <LevelSelector platform={platform} />
+            <DateRangeSelector />
+            {platform === 'meta' && <TimeIncrementSelector />}
+            <FetchButton onClick={handleFetchData} />
+            {loading && <div>Loading...</div>}
+            {error && <Alert variant="destructive">{error}</Alert>}
+            {data && Array.isArray(data) && <ChartComponent data={data} />}
         </div>
-      </main>
-    </HydrateClient>
-  );
-}
+    );
+};
+
+export default Home;
